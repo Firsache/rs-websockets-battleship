@@ -1,3 +1,5 @@
+import WebSocket from "ws";
+
 export type WSdata = {
   type: string;
   data: string;
@@ -8,7 +10,8 @@ export type User = {
   name: string;
   index: number;
   password: string;
-  // wins: number;
+  socket: WebSocket;
+  wins: number;
 };
 
 export type Room = {

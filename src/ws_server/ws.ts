@@ -1,7 +1,7 @@
 import { WebSocketServer } from "ws";
+import WebSocket from "ws";
 
-// import { User, Room } from "../types/ts_types";
-import { registration } from "./handleReq";
+import { registration, disconnection } from "../ws_actions/handleReq";
 
 const WS_Port = 3000;
 export const wss = new WebSocketServer({
@@ -10,7 +10,7 @@ export const wss = new WebSocketServer({
 
 console.log(`Start ws server on the ${WS_Port} port!`);
 
-wss.on("connection", (ws) => {
+wss.on("connection", (ws: WebSocket) => {
   console.log("New frontent connection");
 
   ws.on("error", console.error);
@@ -19,11 +19,12 @@ wss.on("connection", (ws) => {
 
     if (request.type === "reg") {
       registration(ws, request);
-    } else if (request.type === "create_game") {
+    } else if (request.type === "create_room") {
       console.log(request.data);
-      registration(ws, request.data);
+      console.log("create_room");
     } else if (request.type === "add_user_to_room") {
-      console.log(request.data);
+      console.log("add_user_to_room");
+      console.log("create_game");
     } else if (request.type === "add_ships") {
       console.log(request.data);
     } else {
@@ -33,5 +34,6 @@ wss.on("connection", (ws) => {
 
   ws.on("close", () => {
     console.log("Disconnection");
+    disconnection(ws);
   });
 });
