@@ -11,25 +11,6 @@ const validateUser = (reqData: WSdata) => {
     : { error: false, text: "" };
 };
 
-const updateWinners = (ws: WebSocket, currentWinner: User) => {
-  users.forEach((user) => {
-    if (user.name === currentWinner.name) {
-      user.wins = user.wins + 1;
-    }
-  });
-
-  const getWinnersStat = users.map((user) => {
-    return { name: user.name, wins: user.wins };
-  });
-  const data = {
-    type: "update_winners",
-    data: JSON.stringify(getWinnersStat),
-    id: 0,
-  };
-
-  ws.send(JSON.stringify(data));
-};
-
 const getDbIndex = (
   ws: WebSocket,
   reqData: WSdata,
@@ -60,6 +41,29 @@ const getDbIndex = (
   return userIdx;
 };
 
+const sendWinnersStat = (ws: WebSocket) => {
+  const getWinnersStat = users.map((user) => {
+    return { name: user.name, wins: user.wins };
+  });
+  const data = {
+    type: "update_winners",
+    data: JSON.stringify(getWinnersStat),
+    id: 0,
+  };
+
+  ws.send(JSON.stringify(data));
+};
+
+const updateWinners = (ws: WebSocket, currentWinner: User) => {
+  users.forEach((user) => {
+    if (user.name === currentWinner.name) {
+      user.wins = user.wins + 1;
+    }
+  });
+
+  sendWinnersStat(ws);
+};
+
 export const registration = (ws: WebSocket, reqData: WSdata) => {
   const userData = JSON.parse(reqData.data);
 
@@ -77,13 +81,16 @@ export const registration = (ws: WebSocket, reqData: WSdata) => {
     id: 0,
   };
   ws.send(JSON.stringify(data));
+
+  sendWinnersStat(ws);
 };
 
 export const disconnection = (ws: WebSocket) => {
   const disconnectedUser = users.find((user: User) => user.socket === ws);
-  //find the room to close
-  const currentWinner: User = null;
-  updateWinners(ws, currentWinner);
+  console.log(disconnectedUser);
+  console.log(`User${disconnectedUser.name} is disconnected`);
 
-  console.log(`User${disconnectedUser} is disconnected`);
+  //find the room to close
+  // const currentWinner: User = null;
+  // updateWinners(ws, currentWinner);
 };
