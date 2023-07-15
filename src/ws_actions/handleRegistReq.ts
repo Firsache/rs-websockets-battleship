@@ -1,7 +1,7 @@
 import WebSocket from "ws";
 
 import { WSdata, User } from "../types/ts_types";
-import { users } from "../ws_db/db";
+import { rooms, users } from "../ws_db/db";
 
 const validateUser = (reqData: WSdata) => {
   const candidateName = JSON.parse(reqData.data).name;
@@ -41,7 +41,7 @@ const getDbIndex = (
   return userIdx;
 };
 
-const sendWinnersStat = (ws: WebSocket) => {
+const sendWinnersStat = () => {
   const getWinnersStat = users.map((user) => {
     return { name: user.name, wins: user.wins };
   });
@@ -51,17 +51,17 @@ const sendWinnersStat = (ws: WebSocket) => {
     id: 0,
   };
 
-  ws.send(JSON.stringify(data));
+  users.forEach((user) => user.socket.send(JSON.stringify(data)));
 };
 
-const updateWinners = (ws: WebSocket, currentWinner: User) => {
+const updateWinners = (ws: WebSocket, winnersName: string) => {
   users.forEach((user) => {
-    if (user.name === currentWinner.name) {
-      user.wins = user.wins + 1;
+    if (user.name === winnersName) {
+      user.wins = ++user.wins;
     }
   });
 
-  sendWinnersStat(ws);
+  sendWinnersStat();
 };
 
 export const registration = (ws: WebSocket, reqData: WSdata) => {
@@ -82,15 +82,24 @@ export const registration = (ws: WebSocket, reqData: WSdata) => {
   };
   ws.send(JSON.stringify(data));
 
-  sendWinnersStat(ws);
+  sendWinnersStat();
 };
 
 export const disconnection = (ws: WebSocket) => {
-  const disconnectedUser = users.find((user: User) => user.socket === ws);
-  console.log(disconnectedUser);
+  const disconnectedUser = users.find((user) => user.socket === ws);
+  if (!disconnectedUser) return;
   console.log(`User${disconnectedUser.name} is disconnected`);
 
-  //find the room to close
-  // const currentWinner: User = null;
-  // updateWinners(ws, currentWinner);
+  rooms.forEach((room) => {
+    const exitThisRoom = room.roomUsers.find(
+      (user) => user.name === disconnectedUser.name
+    );
+    if (!exitThisRoom) return;
+
+    const currentWinner = room.roomUsers.find(
+      (user) => user.name !== disconnectedUser.name
+    );
+    console.log(`currentWinner is ${currentWinner.name}`);
+    updateWinners(ws, currentWinner.name);
+  });
 };

@@ -23,7 +23,6 @@ wss.on("connection", (ws: WebSocket) => {
     } else if (request.type === "create_room") {
       updateRoom(ws);
     } else if (request.type === "add_user_to_room") {
-      console.log(request.data);
       addUserToRoom(ws, request);
     } else if (request.type === "add_ships") {
       console.log(request.data);
@@ -33,7 +32,6 @@ wss.on("connection", (ws: WebSocket) => {
   });
 
   ws.on("close", () => {
-    // console.log("Disconnection");
     disconnection(ws);
   });
 });

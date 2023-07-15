@@ -32,15 +32,20 @@ export const updateRoom = (ws: WebSocket) => {
 
 export const addUserToRoom = (ws: WebSocket, reqData: WSdata) => {
   const parsedReqData = JSON.parse(reqData.data);
-  console.log(parsedReqData);
-  console.log(parsedReqData.indexRoom);
+  // console.log(parsedReqData);    возвр { indexRoom: 1 }
+  // console.log(parsedReqData.indexRoom); возвр 1
 
   const secondUser = users.find((user) => user.socket === ws);
-  console.log(secondUser);
+  // console.log(secondUser);
 
   const roomToAdd = rooms.find(
     (room) => room.roomId === parsedReqData.indexRoom
   );
+
+  // console.log(roomToAdd); возвр { roomId: 1, roomUsers: [ { name: 'userOne', index: 1 } ] }
+  // console.log(roomToAdd.roomUsers);  возвр [ { name: 'userOne', index: 1 } ]
+  // console.log(roomToAdd.roomUsers.length); возвр 1
+
   if (roomToAdd.roomUsers.length === 1) {
     roomToAdd.roomUsers.push({
       name: secondUser.name,
@@ -48,20 +53,27 @@ export const addUserToRoom = (ws: WebSocket, reqData: WSdata) => {
     });
   }
 
-  createRoom(roomToAdd);
+  createGame(roomToAdd);
 };
 
-const createRoom = (roomToAdd: Room) => {
-  console.log(roomToAdd);
-  const data = {
-    type: "create_room",
-    data: "",
-    id: 0,
-  };
+const createGame = (roomToAdd: Room) => {
+  // console.log(roomToAdd);
+  // возвр {
+  //   roomId: 1,
+  //   roomUsers: [ { name: 'userOne', index: 1 }, { name: 'userTwo', index: 2 } ]
+  // }
 
   roomToAdd.roomUsers.forEach((player) =>
     users.map((user) => {
       if (user.name === player.name) {
+        const data = {
+          type: "create_game",
+          data: {
+            idGame: roomToAdd.roomId,
+            idPlayer: user.index,
+          },
+          id: 0,
+        };
         user.socket.send(JSON.stringify(data));
       }
     })
