@@ -3,6 +3,8 @@ import WebSocket from "ws";
 
 import { registration, disconnection } from "../ws_actions/handleRegistReq";
 import { addUserToRoom, createRoom } from "../ws_actions/handleRoomReq";
+import { startGame } from "../ws_actions/handleShipsReq";
+import { attack, randomAttack } from "../ws_actions/handleAttack";
 
 const WS_Port = 3000;
 export const wss = new WebSocketServer({
@@ -25,7 +27,13 @@ wss.on("connection", (ws: WebSocket) => {
     } else if (request.type === "add_user_to_room") {
       addUserToRoom(ws, request);
     } else if (request.type === "add_ships") {
+      startGame(ws, request);
+    } else if (request.type === "attack") {
       console.log(request.data);
+      attack(ws, request);
+    } else if (request.type === "randomAttack") {
+      console.log(request.data);
+      randomAttack(ws, request);
     } else {
       ws.send("Such action in the game isn't found");
     }

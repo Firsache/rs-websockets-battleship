@@ -12,6 +12,8 @@ export type User = {
   password: string;
   socket: WebSocket;
   wins: number;
+  ships?: Ship[];
+  // enemyCoordinates?: Coordinate[];
 };
 
 export type Room = {
@@ -27,4 +29,15 @@ export type Room = {
 export type Game = {
   gameId: number;
   players: User[];
+};
+
+export type Ship = {
+  position: {
+    x: number;
+    y: number;
+    // destroyed?: boolean;
+  };
+  direction: boolean;
+  length: number;
+  type: "small" | "medium" | "large" | "huge";
 };
