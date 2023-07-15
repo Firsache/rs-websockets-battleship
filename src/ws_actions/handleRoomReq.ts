@@ -2,7 +2,7 @@ import WebSocket from "ws";
 import { Room, User, WSdata } from "../types/ts_types";
 import { rooms, users } from "../ws_db/db";
 
-export const updateRoom = (ws: WebSocket) => {
+export const createRoom = (ws: WebSocket) => {
   const userCreator: User = users.find((user) => user.socket === ws);
 
   const roomIdx: number = rooms.length + 1;
@@ -19,9 +19,17 @@ export const updateRoom = (ws: WebSocket) => {
 
   rooms.push(newRoom);
 
+  updateRoom();
+};
+
+const updateRoom = () => {
+  const roomWithSingleUser = rooms.filter(
+    (room) => room.roomUsers.length === 1
+  );
+
   const data = {
     type: "update_room",
-    data: JSON.stringify([newRoom]),
+    data: JSON.stringify(roomWithSingleUser),
     id: 0,
   };
 
@@ -32,46 +40,38 @@ export const updateRoom = (ws: WebSocket) => {
 
 export const addUserToRoom = (ws: WebSocket, reqData: WSdata) => {
   const parsedReqData = JSON.parse(reqData.data);
-  // console.log(parsedReqData);    возвр { indexRoom: 1 }
-  // console.log(parsedReqData.indexRoom); возвр 1
-
-  const secondUser = users.find((user) => user.socket === ws);
-  // console.log(secondUser);
+  const userToAdd = users.find((user) => user.socket === ws);
 
   const roomToAdd = rooms.find(
     (room) => room.roomId === parsedReqData.indexRoom
   );
 
-  // console.log(roomToAdd); возвр { roomId: 1, roomUsers: [ { name: 'userOne', index: 1 } ] }
-  // console.log(roomToAdd.roomUsers);  возвр [ { name: 'userOne', index: 1 } ]
-  // console.log(roomToAdd.roomUsers.length); возвр 1
+  const isUserCreator = roomToAdd.roomUsers.find(
+    (user) => user.name === userToAdd.name
+  );
+  if (isUserCreator) return;
 
   if (roomToAdd.roomUsers.length === 1) {
     roomToAdd.roomUsers.push({
-      name: secondUser.name,
-      index: secondUser.index,
+      name: userToAdd.name,
+      index: userToAdd.index,
     });
   }
 
+  updateRoom();
   createGame(roomToAdd);
 };
 
 const createGame = (roomToAdd: Room) => {
-  // console.log(roomToAdd);
-  // возвр {
-  //   roomId: 1,
-  //   roomUsers: [ { name: 'userOne', index: 1 }, { name: 'userTwo', index: 2 } ]
-  // }
-
   roomToAdd.roomUsers.forEach((player) =>
     users.map((user) => {
       if (user.name === player.name) {
         const data = {
           type: "create_game",
-          data: {
+          data: JSON.stringify({
             idGame: roomToAdd.roomId,
             idPlayer: user.index,
-          },
+          }),
           id: 0,
         };
         user.socket.send(JSON.stringify(data));
