@@ -13,7 +13,7 @@ export type User = {
   socket: WebSocket;
   wins: number;
   ships?: Ship[];
-  // enemyCoordinates?: Coordinate[];
+  enemyCoordinates?: Coordinate[];
 };
 
 export type Room = {
@@ -29,6 +29,7 @@ export type Room = {
 export type Game = {
   gameId: number;
   players: User[];
+  turn?: number;
 };
 
 export type Ship = {
@@ -40,4 +41,15 @@ export type Ship = {
   direction: boolean;
   length: number;
   type: "small" | "medium" | "large" | "huge";
+};
+
+export type Coordinate = {
+  alive: number;
+  positions: Position[];
+};
+
+export type Position = {
+  x: number;
+  y: number;
+  destroyed?: boolean;
 };

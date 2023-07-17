@@ -5,9 +5,11 @@ import { games, users } from "../ws_db/db";
 export const startGame = (ws: WebSocket, reqData: WSdata) => {
   const parsedReqData = JSON.parse(reqData.data);
 
-  const isCreated = games.find((game) => game.gameId === parsedReqData.gameId);
+  const isCreatedGame = games.find(
+    (game) => game.gameId === parsedReqData.gameId
+  );
 
-  if (!isCreated) {
+  if (!isCreatedGame) {
     const userCreator = users.find((user) => user.socket === ws);
     userCreator.ships = parsedReqData.ships;
 
@@ -21,12 +23,13 @@ export const startGame = (ws: WebSocket, reqData: WSdata) => {
     const secondUser = users.find((user) => user.socket === ws);
     secondUser.ships = parsedReqData.ships;
 
-    isCreated.players.push(secondUser);
+    isCreatedGame.players.push(secondUser);
 
-    if (isCreated.players.length !== 2) return;
-    isCreated.players.forEach((player) => {
+    if (isCreatedGame.players.length !== 2) return;
+    isCreatedGame.players.forEach((player) => {
       const currentUser = users.find((user) => user.name === player.name);
       const whoBegins: number = Math.round(Math.random() + 1);
+      isCreatedGame.turn = whoBegins;
 
       const data = {
         type: "start_game",

@@ -29,10 +29,8 @@ wss.on("connection", (ws: WebSocket) => {
     } else if (request.type === "add_ships") {
       startGame(ws, request);
     } else if (request.type === "attack") {
-      console.log(request.data);
-      attack(ws, request);
+      attack(request);
     } else if (request.type === "randomAttack") {
-      console.log(request.data);
       randomAttack(ws, request);
     } else {
       ws.send("Such action in the game isn't found");
